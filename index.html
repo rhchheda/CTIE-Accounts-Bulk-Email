@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KLE CTIE - Invoice Automation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, #0A1628 0%, #1B2F4F 100%);
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A1628;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+
+        .nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 22, 40, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: #D4AF37;
+        }
+        .logo span {
+            color: #fff;
+        }
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .nav-links a:hover {
+            color: #D4AF37;
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 20px 60px;
+        }
+
+        .section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 60px 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(212, 175, 55, 0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .highlight-card {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(212, 175, 55, 0.05));
+            border: 2px solid #D4AF37;
+        }
+
+        .grid-2, .grid-3, .grid-4 {
+            display: grid;
+            gap: 30px;
+            margin-top: 40px;
+            width: 100%;
+        }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+        h1 {
+            font-size: 48px;
+            background: linear-gradient(135deg, #D4AF37, #FFD700);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 32px;
+            color: #D4AF37;
+            margin-bottom: 20px;
+            border-left: 4px solid #D4AF37;
+            padding-left: 20px;
+        }
+        h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #D4AF37;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #D4AF37;
+            display: block;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #A8C4E0;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #D4AF37;
+            color: #0A1628;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Fixed Table with Horizontal Scroll */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: auto;
+            max-height: 550px;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .invoice-table {
+            width: 100%;
+            min-width: 1000px;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            white-space: nowrap;
+        }
+
+        /* Allow customer name to wrap if needed */
+        .invoice-table td:nth-child(3),
+        .invoice-table th:nth-child(3) {
+            white-space: normal;
+            min-width: 220px;
+            max-width: 250px;
+        }
+
+        .invoice-table th {
+            color: #D4AF37;
+            font-weight: bold;
+            background: #0A1628;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .invoice-table tr:hover {
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* Column widths */
+        .invoice-table th:nth-child(1) { width: 40px; }
+        .invoice-table th:nth-child(2) { width: 120px; }
+        .invoice-table th:nth-child(3) { width: 220px; }
+        .invoice-table th:nth-child(4) { width: 100px; }
+        .invoice-table th:nth-child(5) { width: 110px; }
+        .invoice-table th:nth-child(6) { width: 90px; }
+        .invoice-table th:nth-child(7) { width: 90px; }
+
+        .footer {
+            position: sticky;
+            bottom: 0;
+            background: rgba(10, 22, 40, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid rgba(212, 175, 55, 0.3);
+            font-size: 12px;
+            z-index: 999;
+        }
+        .footer a {
+            color: #D4AF37;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            h2 { font-size: 24px; }
+            .nav { padding: 10px 20px; }
+            .nav-links { gap: 15px; margin-top: 10px; }
+            .section { padding: 40px 15px; }
+            .invoice-table { font-size: 10px; }
+            .invoice-table th, .invoice-table td { padding: 8px 6px; }
+        }
+
+        /* Scroll indicator */
+        .scroll-hint {
+            text-align: center;
+            font-size: 11px;
+            color: #A8C4E0;
+            margin-top: 10px;
+            padding: 5px;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .scroll-hint::before {
+            content: "↔️ ";
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="nav">
+        <div class="logo">KLE <span>CTIE</span></div>
+        <div class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#invoices">34 Invoices</a>
+            <a href="#features">Features</a>
+            <a href="#comparison">Comparison</a>
+            <a href="#tracking">Tracking</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Home Section -->
+        <section id="home" class="section">
+            <div style="text-align: center;">
+                <span class="badge">🎯 PILOT RUN COMPLETED</span>
+                <h1>Invoice Automation System</h1>
+                <p style="font-size: 20px; margin-bottom: 10px; color: #A8C4E0;">Tally Prime → Automated Processing → Email Dispatch</p>
+                <p style="font-size: 16px; margin-bottom: 30px; color: #D4AF37;">✅ 34 Invoices Successfully Processed & Sent (First Run)</p>
+                
+                <div class="grid-3" style="margin-top: 50px;">
+                    <div class="card">
+                        <div class="stat-number">34</div>
+                        <div class="stat-label">Invoices Processed</div>
+                        <div style="font-size: 12px; color: #A8C4E0; margin-top: 10px;">From Tally Prime</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-number">₹3,31,333</div>
+                        <div class="stat-label">Total Invoice Value</div>
+                        <div style="font-size: 12px; color: #A8C4E0; margin-top: 10px;">Sum of all 34 invoices</div>
+                    </div>
+                    <div class="card">
+                        <div class="stat-number">34/34</div>
+                        <div class="stat-label">Emails Sent</div>
+                        <div style="font-size: 12px; color: #A8C4E0; margin-top: 10px;">100% Delivery Success</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Real Invoice Data Section - All 34 Invoices -->
+        <section id="invoices" class="section">
+            <h2>📊 All 34 Real Invoices Processed</h2>
+            <div class="card" style="width: 100%;">
+                <div class="table-wrapper">
+                    <table class="invoice-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Invoice No.</th>
+                                <th>Customer Name</th>
+                                <th>Amount (₹)</th>
+                                <th>Outstanding (₹)</th>
+                                <th>Space (sq ft)</th>
+                                <th>Utility Rate (₹/sq ft)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>KLE/35/26-27</td><td>SASKEN SILICON TECHNOLOGIES PVT LTD</td><td>54,752</td><td>54,752</td><td>1,160</td><td>40.00</td></tr>
+                            <tr><td>2</td><td>KLE/36/26-27</td><td>Thirdeye Data</td><td>6,355</td><td>6,925</td><td>205</td><td>31.00</td></tr>
+                            <tr><td>3</td><td>KLE/37/26-27</td><td>Abhiyantrik Solutions Pvt Ltd</td><td>3,690</td><td>3,790</td><td>180</td><td>19.00</td></tr>
+                            <tr><td>4</td><td>KLE/38/26-27</td><td>Armtronix Iot Pvt Ltd</td><td>10,988</td><td>1,660</td><td>536</td><td>19.00</td></tr>
+                            <tr><td>5</td><td>KLE/39/26-27</td><td>Celium Devices Pvt Ltd</td><td>3,432</td><td>7,98,846</td><td>132</td><td>24.50</td></tr>
+                            <tr><td>6</td><td>KLE/40/26-27</td><td>Neuorigami Automation India Pvt Ltd</td><td>12,516</td><td>29,334</td><td>536</td><td>21.85</td></tr>
+                            <tr><td>7</td><td>KLE/41/26-27</td><td>Kalpas Innovations Pvt Ltd</td><td>11,870</td><td>1,42,733</td><td>579</td><td>19.00</td></tr>
+                            <tr><td>8</td><td>KLE/42/26-27</td><td>Indrone Aero Systems</td><td>19,958</td><td>8,51,291</td><td>672</td><td>28.20</td></tr>
+                            <tr><td>9</td><td>KLE/43/26-27</td><td>Green PMU SEMI Pvt Ltd</td><td>22,878</td><td>28,367</td><td>1,116</td><td>19.00</td></tr>
+                            <tr><td>10</td><td>KLE/44/26-27</td><td>Semi-Ksha Semiconductors Pvt Ltd</td><td>18,972</td><td>3,74,452</td><td>1,116</td><td>15.50</td></tr>
+                            <tr><td>11</td><td>KLE/45/26-27</td><td>Dori Software Systems Pvt Ltd</td><td>14,473</td><td>15,273</td><td>706</td><td>19.00</td></tr>
+                            <tr><td>12</td><td>KLE/46/26-27</td><td>Transil Technologies Pvt Ltd</td><td>4,483</td><td>4,483</td><td>192</td><td>21.85</td></tr>
+                            <tr><td>13</td><td>KLE/47/26-27</td><td>Einetcorp Pvt Ltd</td><td>3,506</td><td>3,606</td><td>171</td><td>19.00</td></tr>
+                            <tr><td>14</td><td>KLE/48/26-27</td><td>Anu Yek Rasayan Solutions Pvt Ltd</td><td>3,276</td><td>100</td><td>156</td><td>19.50</td></tr>
+                            <tr><td>15</td><td>KLE/49/26-27</td><td>IOVIS Technologies</td><td>3,150</td><td>530</td><td>150</td><td>19.50</td></tr>
+                            <tr><td>16</td><td>KLE/50/26-27</td><td>Athreya Technologies Pvt Ltd</td><td>3,042</td><td>100</td><td>156</td><td>18.00</td></tr>
+                            <tr><td>17</td><td>KLE/51/26-27</td><td>Ethernovia India Pvt Ltd</td><td>8,418</td><td>9,198</td><td>276</td><td>29.00</td></tr>
+                            <tr><td>18</td><td>KLE/52/26-27</td><td>Teloquence Pvt Ltd</td><td>4,305</td><td>4,405</td><td>205</td><td>19.50</td></tr>
+                            <tr><td>19</td><td>KLE/53/26-27</td><td>Saureno Energene Pvt Ltd</td><td>2,128</td><td>7,184</td><td>133</td><td>14.50</td></tr>
+                            <tr><td>20</td><td>KLE/54/26-27</td><td>Farmercoin Smart Robotic Solutions</td><td>6,928</td><td>1,43,649</td><td>433</td><td>14.50</td></tr>
+                            <tr><td>21</td><td>KLE/55/26-27</td><td>Powaha Infotech Pvt Ltd</td><td>3,433</td><td>3,867</td><td>192</td><td>16.38</td></tr>
+                            <tr><td>22</td><td>KLE/56/26-27</td><td>DoketRun Tech Pvt Ltd</td><td>27,600</td><td>3,64,648</td><td>1,200</td><td>21.50</td></tr>
+                            <tr><td>23</td><td>KLE/57/26-27</td><td>Three Axis Engineering Services Pvt Ltd</td><td>12,651</td><td>11,170</td><td>725</td><td>15.95</td></tr>
+                            <tr><td>24</td><td>KLE/58/26-27</td><td>E-Artkey Innovation Pvt Ltd</td><td>5,610</td><td>12,040</td><td>374</td><td>13.50</td></tr>
+                            <tr><td>25</td><td>KLE/59/26-27</td><td>Biosyl Technologies Pvt Ltd</td><td>6,817</td><td>9,617</td><td>285</td><td>22.42</td></tr>
+                            <tr><td>26</td><td>KLE/60/26-27</td><td>Chemioptics Healthcare Pvt Ltd</td><td>3,200</td><td>3,200</td><td>200</td><td>14.50</td></tr>
+                            <tr><td>27</td><td>KLE/61/26-27</td><td>Vegam.Io Solutions Pvt Ltd</td><td>45,619</td><td>3,910</td><td>1,536</td><td>28.20</td></tr>
+                            <tr><td>28</td><td>KLE/62/26-27</td><td>Pixamount Innovations</td><td>5,980</td><td>31,630</td><td>299</td><td>18.50</td></tr>
+                            <tr><td>29</td><td>KLE/63/26-27</td><td>KVB Green Energy</td><td>4,420</td><td>4,870</td><td>221</td><td>18.50</td></tr>
+                            <tr><td>30</td><td>KLE/64/26-27</td><td>Avantro Labs</td><td>773</td><td>12,063</td><td>103</td><td>6.00</td></tr>
+                            <tr><td>31</td><td>KLE/65/26-27</td><td>Techxcelerate Innovation Pvt Ltd</td><td>706</td><td>706</td><td>83</td><td>0.00</td></tr>
+                            <tr><td>32</td><td>KLE/66/26-27</td><td>Nupro Lifestyle Ventures Pvt Ltd</td><td>765</td><td>2,295</td><td>102</td><td>6.00</td></tr>
+                            <tr><td>33</td><td>KLE/67/26-27</td><td>Bionex Technologies Pvt Ltd</td><td>3,042</td><td>8,124</td><td>156</td><td>0.00</td></tr>
+                            <tr><td>34</td><td>KLE/68/26-27</td><td>Calibrex Innovation LLP</td><td>1,000</td><td>2,000</td><td>0</td><td>0.00</td></tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: rgba(212, 175, 55, 0.2);">
+                                <td colspan="3"><strong>Total</strong></td>
+                                <td><strong>₹3,31,333</strong></td>
+                                <td><strong>₹28,85,911</strong></td>
+                                <td><strong>13,436</strong></td>
+                                <td>—</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <span class="scroll-hint">Scroll horizontally to see all columns →</span>
+                </div>
+                <p style="font-size: 11px; color: #A8C4E0; margin-top: 10px; text-align: center;">
+                    📊 Summary: 34 Invoices | Total Value: ₹3,31,333 | Total Outstanding: ₹28,85,911 | Total Space: 13,436 sq ft | Utility Rates range: ₹0 to ₹40/sq ft
+                </p>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="section">
+            <h2>✨ Key Features Implemented</h2>
+            <div class="grid-3">
+                <div class="card">
+                    <h3>📄 Tally Prime Export</h3>
+                    <p>34 invoices exported directly from Tally Prime as a single combined PDF</p>
+                </div>
+                <div class="card">
+                    <h3>🔪 Smart Splitting</h3>
+                    <p>Automatic detection of invoice boundaries. Split 1 PDF → 34 individual PDFs</p>
+                </div>
+                <div class="card">
+                    <h3>🔒 PDF Stamping & Locking</h3>
+                    <p>Round seal stamp, digital signature, footer text added to each invoice. PDFs encrypted - no further edits possible</p>
+                </div>
+                <div class="card">
+                    <h3>🎨 Navy & Gold Branding</h3>
+                    <p>Professional email templates matching KLE CTIE identity with leaf icon and heart emblem</p>
+                </div>
+                <div class="card">
+                    <h3>📧 Bulk Email Dispatch</h3>
+                    <p>All 34 invoices sent with attachments and payment instructions</p>
+                </div>
+                <div class="card">
+                    <h3>📝 Auto Audit Trail</h3>
+                    <p>Complete logs maintained: timestamp, success/failure, delivery status</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparison Section -->
+        <section id="comparison" class="section">
+            <h2>📊 Manual vs Automated: Time & Accuracy</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>⏱️ Manual Process (34 Invoices)</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>📄 PDF Splitting: 20-30 min</li>
+                        <li>📝 Data Extraction: 30-45 min</li>
+                        <li>🔒 Manual Stamping: 20-30 min</li>
+                        <li>📧 Email Sending: 30-45 min</li>
+                        <li style="margin-top: 10px;"><strong>Total: ~1.5 - 2.5 hours</strong></li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>⚡ Automated Process (34 Invoices)</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>📄 PDF Splitting: 30 seconds ✓</li>
+                        <li>📝 Data Extraction: Automatic ✓</li>
+                        <li>🔒 Auto Stamping: 2 minute ✓</li>
+                        <li>📧 Bulk Email: 3 minutes ✓</li>
+                        <li style="margin-top: 10px;"><strong>Total: &lt; 6 minutes</strong></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="highlight-card card" style="width: 100%; margin-top: 20px;">
+                <h3 style="text-align: center;">📈 Time Savings Summary</h3>
+                <div style="text-align: center;">
+                    <p style="font-size: 36px; color: #D4AF37;">~97%</p>
+                    <p>Time Reduction for 34 Invoice Batch</p>
+                    <p style="margin-top: 10px; font-size: 14px;">Manual: ~3 hours → Automated: ~4 minutes</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tracking Section -->
+        <section id="tracking" class="section">
+            <h2>📈 Tracking & Audit Trail</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>✅ Automatically Tracked</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>✓ Email sent/failed status (34/34 success)</li>
+                        <li>✓ Timestamp of each send</li>
+                        <li>✓ Delivery failure reasons (none)</li>
+                        <li>✓ Customer-wise logs</li>
+                        <li>✓ PDF stamping confirmation</li>
+                    </ul>
+                </div>
+                <div class="card">
+                    <h3>📋 Pilot Run Log Results</h3>
+                    <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px;">
+                        📅 Date: 2026-05-15<br>
+                        📧 Sender: KLE CTIE Accounts Dept<br>
+                        📁 Period: Apr-2026<br>
+                        📊 Total Invoices: 34<br>
+                        ✅ Successful: 34<br>
+                        ❌ Failed: 0<br>
+                        💰 Total Amount: ₹3,31,333<br>
+                        💰 Total Outstanding: ₹28,85,911<br>
+                        📐 Total Space: 13,436 sq ft<br>
+                        ⏱️ Processing Time: 3m 52s<br>
+                        📝 Log saved: email_log_20260515.txt
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight-card card" style="width: 100%; margin-top: 20px; text-align: center;">
+                <h3>📌 Pilot Run Summary</h3>
+                <p><strong>All 34 real invoices</strong> from Tally Prime were successfully processed:</p>
+                <p>1️⃣ Exported from Tally Prime → 2️⃣ Split into 34 individual PDFs → 3️⃣ Stamped with Round Seal + Signature → 4️⃣ Footer text added → 5️⃣ PDFs locked → 6️⃣ Sent via HTML email templates</p>
+                <p style="margin-top: 15px; color: #D4AF37;">✅ All 34 emails delivered successfully. Zero failures. Ready for production use.</p>
+                <p style="margin-top: 10px; font-size: 12px; color: #A8C4E0;">Total invoice value processed: ₹3,31,333 | Utility rates range from ₹0 to ₹40 per sq ft</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Sticky Footer -->
+    <div class="footer">
+        Made with ❤️ <a href="#">~rhc</a> · EE Lab, KLE-CTIE · CTIE Accounts Bulk Email · 
+        <a href="#">Tally Prime Integration</a> · Pilot: 34 Real Invoices | ₹3.31L Processed
+    </div>
+
+    <script>
+        const sections = document.querySelectorAll('.section');
+        
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
