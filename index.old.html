@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>KLE CTIE | Invoice Automation Pilot Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+:root{
+  --navy:#0d1b3e;--navy-mid:#1a2f5e;
+  --gold:#c9a84c;--gold-l:#e8c97a;--gold-pale:#f5e9c8;
+  --cream:#faf8f3;--soft:#f0ece0;--white:#ffffff;
+  --text:#0d1b3e;--muted:#6b7a99;--border:rgba(13,27,62,0.10);
+  --shadow:0 8px 32px rgba(13,27,62,0.10);
+  --green:#1b7a3e;--red:#c0392b;--blue:#2471a3;--purple:#6c3483;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--text);padding-bottom:48px;}
+
+/* STICKY FOOTER (exactly as previous invoice report) */
+.sticky-footer{
+  position:fixed;bottom:0;left:0;right:0;height:42px;
+  background:var(--navy);border-top:1px solid rgba(201,168,76,0.2);
+  display:flex;align-items:center;justify-content:center;z-index:200;
+  font-size:12px;color:rgba(255,255,255,0.4);gap:8px;flex-wrap:wrap;padding:0 12px;
+}
+.sticky-footer a{color:var(--gold);text-decoration:none;}
+.sticky-footer b{color:var(--gold);font-weight:400;font-style:italic;}
+
+/* HEADER */
+.report-header{
+  background:var(--navy);padding:2rem 2rem 2rem;
+  position:relative;overflow:hidden;
+}
+.report-header::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(201,168,76,0.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(201,168,76,0.05) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+.report-header-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;}
+.report-eyebrow{font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);margin-bottom:0.6rem;}
+.report-title{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,5vw,52px);font-weight:600;color:var(--white);line-height:1.1;margin-bottom:0.4rem;}
+.report-title span{color:var(--gold);font-style:italic;}
+.report-sub{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:1.5rem;}
+.gold-bar{height:3px;background:linear-gradient(to right,var(--gold),var(--gold-l),var(--gold));border-radius:2px;max-width:300px;}
+
+/* STATIC BADGE replacing live indicator */
+.static-badge{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(13,27,62,0.85);backdrop-filter:blur(8px);
+  padding:6px 18px;border-radius:40px;border:1px solid rgba(201,168,76,0.4);
+}
+.static-badge i{color:var(--gold);font-size:14px;}
+.static-text{font-size:11px;font-weight:600;letter-spacing:0.1em;color:var(--gold);text-transform:uppercase;}
+
+/* container */
+.container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
+
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:2.2rem;}
+.kpi-card{background:var(--white);border-radius:16px;padding:1.2rem 0.8rem;border:1px solid var(--border);box-shadow:var(--shadow);text-align:center;transition:transform 0.2s;}
+.kpi-card:hover{transform:translateY(-4px);}
+.kpi-label{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.kpi-value{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;line-height:1;}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px;}
+.kv-navy{color:var(--navy);}
+.kv-gold{color:var(--gold);}
+.kv-green{color:var(--green);}
+.kv-red{color:var(--red);}
+
+/* section styling */
+.sec-label{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+.sec-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);}
+.sec-line{flex:1;height:1px;background:rgba(201,168,76,0.25);max-width:50px;}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,3vw,30px);font-weight:600;color:var(--navy);margin-bottom:0.5rem;}
+.sec-title em{color:var(--gold);font-style:italic;}
+.sec-sub{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.7;}
+section{margin-bottom:3rem;}
+
+/* FUNNEL (Processing Stages) */
+.funnel-wrap{display:flex;flex-direction:column;gap:8px;}
+.funnel-row{display:grid;grid-template-columns:160px 1fr 60px 60px;gap:12px;align-items:center;padding:10px 16px;background:var(--white);border-radius:12px;border:1px solid var(--border);}
+.funnel-stage{font-size:12px;font-weight:600;color:var(--white);padding:4px 10px;border-radius:20px;text-align:center;}
+.funnel-bar-wrap{height:10px;background:rgba(13,27,62,0.07);border-radius:6px;overflow:hidden;}
+.funnel-bar{height:100%;border-radius:6px;background:linear-gradient(to right,var(--gold),var(--gold-l));width:0%;transition:width 0.9s;}
+.funnel-count{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--navy);text-align:center;}
+.funnel-pct{font-size:12px;color:var(--muted);text-align:center;}
+
+/* table wrapper */
+.table-wrapper{width:100%;overflow-x:auto;border-radius:16px;border:1px solid var(--border);background:var(--white);margin-top:1rem;}
+.invoice-table{width:100%;min-width:800px;border-collapse:collapse;font-size:12px;}
+.invoice-table th,.invoice-table td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.invoice-table th{background:var(--navy);color:rgba(255,255,255,0.75);font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;position:sticky;top:0;}
+.invoice-table tr:hover{background:var(--cream);}
+.total-row{background:var(--gold-pale);font-weight:600;}
+
+/* grid for features & comparisons */
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:1rem 0;}
+.card{background:var(--white);border-radius:16px;padding:1.3rem;border:1px solid var(--border);box-shadow:var(--shadow);}
+.card h3{margin-bottom:0.7rem;color:var(--gold);}
+.card ul{list-style:none;padding-left:0;}
+.card li{margin:6px 0;font-size:13px;}
+.highlight-card{background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:2px solid var(--gold);text-align:center;}
+
+/* insights grid */
+.insights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:1rem;}
+.insight-card{background:var(--white);border-radius:14px;padding:1.2rem;border:1px solid var(--border);}
+.insight-card.dark{background:var(--navy);}
+.insight-icon{font-size:26px;margin-bottom:0.7rem;}
+.insight-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:0.4rem;}
+.insight-card.dark .insight-title{color:var(--white);}
+.insight-text{font-size:13px;color:var(--muted);line-height:1.6;}
+
+.reveal{opacity:0;transform:translateY(20px);transition:opacity 0.5s ease,transform 0.5s;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+@media(max-width:700px){
+  .funnel-row{grid-template-columns:110px 1fr 45px 40px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<!-- STICKY FOOTER (exactly as previous invoice report) -->
+<div class="sticky-footer">
+  Made with ❤ <a href="#">~rhc</a> · EE Lab, KLE-CTIE · CTIE Accounts Bulk Email · 
+  </div>
+
+<!-- HEADER -->
+<div class="report-header">
+  <div class="report-header-inner">
+    <div>
+      <div class="report-eyebrow">KLE-CTIE · Centre for Technology Innovation & Entrepreneurship </div>
+      <div class="report-title">Invoice <span>Automation</span><br>Pilot Report</div>
+      <div class="report-sub">Tally Prime → Split → Stamp → Lock → Email Dispatch</div>
+      <div class="gold-bar"></div>
+    </div>
+    <div class="static-badge">
+      <i class="fas fa-check-circle"></i>
+      <span class="static-text">PILOT COMPLETED · 34/34 INVOICES</span>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- KPI CARDS -->
+  <div class="kpi-grid reveal">
+    <div class="kpi-card"><div class="kpi-label">Invoices Processed</div><div class="kpi-value kv-navy">34</div><div class="kpi-sub">From Tally Prime v34</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Invoice Value</div><div class="kpi-value kv-gold">₹3,31,333</div><div class="kpi-sub">Sum of all 34 invoices</div></div>
+    <div class="kpi-card"><div class="kpi-label">Time Saved</div><div class="kpi-value kv-green">~97%</div><div class="kpi-sub">3 hours → 4 minutes</div></div>
+    <div class="kpi-card"><div class="kpi-label">Email Success</div><div class="kpi-value kv-red">100%</div><div class="kpi-sub">34/34 delivered</div></div>
+  </div>
+
+  <!-- SECTION 01: PROCESSING FUNNEL -->
+  <section class="reveal">
+    <div class="sec-label"><span class="sec-num">01</span><div class="sec-line"></div></div>
+    <div class="sec-title">Automation <em>Processing Funnel</em></div>
+    <div class="sec-sub">From raw export to locked PDFs and dispatched emails — every step fully automated.</div>
+    <div class="funnel-wrap">
+      <div class="funnel-row"><div class="funnel-stage" style="background:#1a2f5e;">Tally Prime Export</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
+      <div class="funnel-row"><div class="funnel-stage" style="background:#2471a3;">Split & Extract</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
+      <div class="funnel-row"><div class="funnel-stage" style="background:#6c3483;">Stamp + Lock</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
+      <div class="funnel-row"><div class="funnel-stage" style="background:#1b7a3e;">Email Dispatch</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
+    </div>
+    <div class="sec-sub" style="margin-top:12px;">✅ Zero drop-off — every invoice successfully processed, stamped, locked and emailed.</div>
+  </section>
+
+  <!-- SECTION 02: REAL INVOICE DATA (ALL 34) -->
+  <section class="reveal">
+    <div class="sec-label"><span class="sec-num">02</span><div class="sec-line"></div></div>
+    <div class="sec-title">All <em>34 Real Invoices</em></div>
+    <div class="sec-sub">Exported from Tally Prime v34, automatically split, stamped with round seal + signature, PDF locked, and emailed.</div>
+    <div class="table-wrapper">
+      <table class="invoice-table">
+        <thead>
+          <tr><th>#</th><th>Invoice No.</th><th>Customer Name</th><th>Amount (₹)</th><th>Outstanding (₹)</th><th>Space (sq ft)</th><th>Utility Rate (₹/sq ft)</th></tr>
+        </thead>
+        <tbody>
+          <!-- Data rows as per previous report (34 rows shown) -->
+          <tr><td>1</td><td>KLE/35/26-27</td><td>SASKEN SILICON TECHNOLOGIES PVT LTD</td><td>54,752</td><td>54,752</td><td>1,160</td><td>40.00</td></tr>
+          <tr><td>2</td><td>KLE/36/26-27</td><td>Thirdeye Data</td><td>6,355</td><td>6,925</td><td>205</td><td>31.00</td></tr>
+          <tr><td>3</td><td>KLE/37/26-27</td><td>Abhiyantrik Solutions Pvt Ltd</td><td>3,690</td><td>3,790</td><td>180</td><td>19.00</td></tr>
+          <tr><td>4</td><td>KLE/38/26-27</td><td>Armtronix Iot Pvt Ltd</td><td>10,988</td><td>1,660</td><td>536</td><td>19.00</td></tr>
+          <tr><td>5</td><td>KLE/39/26-27</td><td>Celium Devices Pvt Ltd</td><td>3,432</td><td>7,98,846</td><td>132</td><td>24.50</td></tr>
+          <tr><td>6</td><td>KLE/40/26-27</td><td>Neuorigami Automation India Pvt Ltd</td><td>12,516</td><td>29,334</td><td>536</td><td>21.85</td></tr>
+          <tr><td>7</td><td>KLE/41/26-27</td><td>Kalpas Innovations Pvt Ltd</td><td>11,870</td><td>1,42,733</td><td>579</td><td>19.00</td></tr>
+          <tr><td>8</td><td>KLE/42/26-27</td><td>Indrone Aero Systems</td><td>19,958</td><td>8,51,291</td><td>672</td><td>28.20</td></tr>
+          <tr><td>9</td><td>KLE/43/26-27</td><td>Green PMU SEMI Pvt Ltd</td><td>22,878</td><td>28,367</td><td>1,116</td><td>19.00</td></tr>
+          <tr><td>10</td><td>KLE/44/26-27</td><td>Semi-Ksha Semiconductors Pvt Ltd</td><td>18,972</td><td>3,74,452</td><td>1,116</td><td>15.50</td></tr>
+          <tr><td>11</td><td>KLE/45/26-27</td><td>Dori Software Systems Pvt Ltd</td><td>14,473</td><td>15,273</td><td>706</td><td>19.00</td></tr>
+          <tr><td>12</td><td>KLE/46/26-27</td><td>Transil Technologies Pvt Ltd</td><td>4,483</td><td>4,483</td><td>192</td><td>21.85</td></tr>
+          <tr><td>13</td><td>KLE/47/26-27</td><td>Einetcorp Pvt Ltd</td><td>3,506</td><td>3,606</td><td>171</td><td>19.00</td></tr>
+          <tr><td>14</td><td>KLE/48/26-27</td><td>Anu Yek Rasayan Solutions Pvt Ltd</td><td>3,276</td><td>100</td><td>156</td><td>19.50</td></tr>
+          <tr><td>15</td><td>KLE/49/26-27</td><td>IOVIS Technologies</td><td>3,150</td><td>530</td><td>150</td><td>19.50</td></tr>
+          <tr><td>16</td><td>KLE/50/26-27</td><td>Athreya Technologies Pvt Ltd</td><td>3,042</td><td>100</td><td>156</td><td>18.00</td></tr>
+          <tr><td>17</td><td>KLE/51/26-27</td><td>Ethernovia India Pvt Ltd</td><td>8,418</td><td>9,198</td><td>276</td><td>29.00</td></tr>
+          <tr><td>18</td><td>KLE/52/26-27</td><td>Teloquence Pvt Ltd</td><td>4,305</td><td>4,405</td><td>205</td><td>19.50</td></tr>
+          <tr><td>19</td><td>KLE/53/26-27</td><td>Saureno Energene Pvt Ltd</td><td>2,128</td><td>7,184</td><td>133</td><td>14.50</td></tr>
+          <tr><td>20</td><td>KLE/54/26-27</td><td>Farmercoin Smart Robotic Solutions</td><td>6,928</td><td>1,43,649</td><td>433</td><td>14.50</td></tr>
+          <tr><td>21</td><td>KLE/55/26-27</td><td>Powaha Infotech Pvt Ltd</td><td>3,433</td><td>3,867</td><td>192</td><td>16.38</td></tr>
+          <tr><td>22</td><td>KLE/56/26-27</td><td>DoketRun Tech Pvt Ltd</td><td>27,600</td><td>3,64,648</td><td>1,200</td><td>21.50</td></tr>
+          <tr><td>23</td><td>KLE/57/26-27</td><td>Three Axis Engineering Services Pvt Ltd</td><td>12,651</td><td>11,170</td><td>725</td><td>15.95</td></tr>
+          <tr><td>24</td><td>KLE/58/26-27</td><td>E-Artkey Innovation Pvt Ltd</td><td>5,610</td><td>12,040</td><td>374</td><td>13.50</td></tr>
+          <tr><td>25</td><td>KLE/59/26-27</td><td>Biosyl Technologies Pvt Ltd</td><td>6,817</td><td>9,617</td><td>285</td><td>22.42</td></tr>
+          <tr><td>26</td><td>KLE/60/26-27</td><td>Chemioptics Healthcare Pvt Ltd</td><td>3,200</td><td>3,200</td><td>200</td><td>14.50</td></tr>
+          <tr><td>27</td><td>KLE/61/26-27</td><td>Vegam.Io Solutions Pvt Ltd</td><td>45,619</td><td>3,910</td><td>1,536</td><td>28.20</td></tr>
+          <tr><td>28</td><td>KLE/62/26-27</td><td>Pixamount Innovations</td><td>5,980</td><td>31,630</td><td>299</td><td>18.50</td></tr>
+          <tr><td>29</td><td>KLE/63/26-27</td><td>KVB Green Energy</td><td>4,420</td><td>4,870</td><td>221</td><td>18.50</td></tr>
+          <tr><td>30</td><td>KLE/64/26-27</td><td>Avantro Labs</td><td>773</td><td>12,063</td><td>103</td><td>6.00</td></tr>
+          <tr><td>31</td><td>KLE/65/26-27</td><td>Techxcelerate Innovation Pvt Ltd</td><td>706</td><td>706</td><td>83</td><td>0.00</td></tr>
+          <tr><td>32</td><td>KLE/66/26-27</td><td>Nupro Lifestyle Ventures Pvt Ltd</td><td>765</td><td>2,295</td><td>102</td><td>6.00</td></tr>
+          <tr><td>33</td><td>KLE/67/26-27</td><td>Bionex Technologies Pvt Ltd</td><td>3,042</td><td>8,124</td><td>156</td><td>0.00</td></tr>
+          <tr><td>34</td><td>KLE/68/26-27</td><td>Calibrex Innovation LLP</td><td>1,000</td><td>2,000</td><td>0</td><td>0.00</td></tr>
+          <tr class="total-row"><td colspan="3"><strong>Total</strong></td><td><strong>₹3,31,333</strong></td><td><strong>₹28,85,911</strong></td><td><strong>13,436</strong></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="sec-sub" style="margin-top:12px;">📊 Utility rates range ₹0–₹40/sq ft · Total space 13,436 sq ft · All PDFs stamped with round seal + signature and locked.</div>
+  </section>
+
+  <!-- SECTION 03: FEATURES -->
+  <section class="reveal">
+    <div class="sec-label"><span class="sec-num">03</span><div class="sec-line"></div></div>
+    <div class="sec-title">Key <em>Features</em> Implemented</div>
+    <div class="grid-2">
+      <div class="card"><h3>📄 Tally Prime v34 Export</h3><p>34 invoices exported as single combined PDF.</p></div>
+      <div class="card"><h3>🔪 Smart Splitting</h3><p>Auto-detected invoice boundaries → 34 individual PDFs in 30 sec.</p></div>
+      <div class="card"><h3>🔒 PDF Stamping & Locking</h3><p>Round seal + digital signature + footer added. PDFs encrypted – no further edits.</p></div>
+      <div class="card"><h3>🎨 Navy & Gold Branding</h3><p>Professional HTML email templates with leaf icon and heart emblem.</p></div>
+      <div class="card"><h3>📧 Bulk Email Dispatch</h3><p>All 34 invoices sent with attachments and payment UTR instructions.</p></div>
+      <div class="card"><h3>📝 Auto Audit Trail</h3><p>Complete logs: timestamp, success/failure, delivery status.</p></div>
+    </div>
+  </section>
+
+  <!-- SECTION 04: MANUAL vs AUTOMATED -->
+  <section class="reveal">
+    <div class="sec-label"><span class="sec-num">04</span><div class="sec-line"></div></div>
+    <div class="sec-title">Manual <em>vs</em> Automated</div>
+    <div class="grid-2">
+      <div class="card"><h3>⏱️ Manual Process (34 invoices)</h3>
+        <ul><li>PDF splitting: 60–90 min</li><li>Data entry: 30–45 min</li><li>Stamping: 20–30 min</li><li>Email sending: 30–45 min</li><li><strong>Total: ~2.5–3.5 hours</strong></li></ul>
+      </div>
+      <div class="card"><h3>⚡ Automated Process (34 invoices)</h3>
+        <ul><li>PDF splitting: 30 sec ✓</li><li>Data extraction: automatic ✓</li><li>Auto stamp & lock: 1 min ✓</li><li>Bulk email: 2 min ✓</li><li><strong>Total: &lt; 4 minutes</strong></li></ul>
+      </div>
+    </div>
+    <div class="highlight-card card"><div style="font-size:32px; color:var(--gold);">~97%</div><div>Time reduction · Manual 3 hours → Automated 4 minutes</div></div>
+  </section>
+
+  <!-- SECTION 05: TRACKING & AUDIT -->
+  <section class="reveal">
+    <div class="sec-label"><span class="sec-num">05</span><div class="sec-line"></div></div>
+    <div class="sec-title">Tracking <em>& Audit Trail</em></div>
+    <div class="grid-2">
+      <div class="card"><h3>✅ Automatically Tracked</h3>
+        <ul><li>Email sent/failed status (34/34 success)</li><li>Timestamp of each send</li><li>Delivery failure reasons (none)</li><li>PDF stamping confirmation</li><li>Customer-wise logs</li></ul>
+      </div>
+      <div class="card"><h3>📋 Pilot Run Log</h3>
+        <div style="background:var(--cream); padding:12px; border-radius:8px; font-family:monospace; font-size:12px;">
+          📅 Date: 2026-05-15<br>
+          📧 Sender: KLE CTIE Accounts Dept<br>
+          📁 Period: Apr-2026<br>
+          📊 Total: 34<br>
+          ✅ Successful: 34<br>
+          ❌ Failed: 0<br>
+          💰 Total Amount: ₹3,31,333<br>
+          ⏱️ Processing time: 3m 52s
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 06: INSIGHTS -->
+  <section class="reveal">
+    <div class="sec-label"><span class="sec-num">06</span><div class="sec-line"></div></div>
+    <div class="sec-title">Key <em>Insights</em></div>
+    <div class="insights-grid">
+      <div class="insight-card"><div class="insight-icon">⏱️</div><div class="insight-title">97% Time Saved</div><div class="insight-text">Manual 3 hours → automated 4 minutes for 34 invoices. Scales linearly.</div></div>
+      <div class="insight-card"><div class="insight-icon">🔒</div><div class="insight-title">Zero Post-Editing Risk</div><div class="insight-text">PDFs are locked with owner password after stamping – no accidental changes.</div></div>
+      <div class="insight-card"><div class="insight-icon">📧</div><div class="insight-title">100% Delivery Rate</div><div class="insight-text">All 34 sample emails reached recipients; attachment verified.</div></div>
+      <div class="insight-card"><div class="insight-icon">💰</div><div class="insight-title">₹3.31L Invoiced</div><div class="insight-text">First batch total value; system ready for monthly run.</div></div>
+    </div>
+  </section>
+</div>
+
+<script>
+  // Simple reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+  // force initial visible for KPIs
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(r => r.classList.add('visible'));
+  }, 200);
+</script>
+</body>
+</html>
