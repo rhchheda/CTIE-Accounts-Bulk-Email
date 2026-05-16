@@ -17,9 +17,43 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
-body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--text);padding-bottom:48px;}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--soft);
+  color:var(--text);
+  padding-bottom:48px;
+  user-select:none;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+}
 
-/* STICKY FOOTER (exactly as previous invoice report) */
+/* Toast notification */
+.toast-notification{
+  position:fixed;
+  bottom:80px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--navy);
+  color:var(--gold);
+  padding:12px 24px;
+  border-radius:50px;
+  font-size:14px;
+  font-weight:500;
+  z-index:1000;
+  box-shadow:0 4px 20px rgba(0,0,0,0.2);
+  border:1px solid var(--gold);
+  backdrop-filter:blur(10px);
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.3s ease;
+  font-family:'Outfit',sans-serif;
+  white-space:nowrap;
+}
+.toast-notification.show{opacity:1;}
+.toast-notification i{margin-right:8px;color:var(--gold);}
+
+/* STICKY FOOTER */
 .sticky-footer{
   position:fixed;bottom:0;left:0;right:0;height:42px;
   background:var(--navy);border-top:1px solid rgba(201,168,76,0.2);
@@ -47,7 +81,6 @@ body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--text);pa
 .report-sub{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:1.5rem;}
 .gold-bar{height:3px;background:linear-gradient(to right,var(--gold),var(--gold-l),var(--gold));border-radius:2px;max-width:300px;}
 
-/* STATIC BADGE replacing live indicator */
 .static-badge{
   display:flex;align-items:center;gap:8px;
   background:rgba(13,27,62,0.85);backdrop-filter:blur(8px);
@@ -56,7 +89,6 @@ body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--text);pa
 .static-badge i{color:var(--gold);font-size:14px;}
 .static-text{font-size:11px;font-weight:600;letter-spacing:0.1em;color:var(--gold);text-transform:uppercase;}
 
-/* container */
 .container{max-width:1100px;margin:0 auto;padding:2rem 1.5rem;}
 
 /* KPI cards */
@@ -71,7 +103,6 @@ body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--text);pa
 .kv-green{color:var(--green);}
 .kv-red{color:var(--red);}
 
-/* section styling */
 .sec-label{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
 .sec-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);}
 .sec-line{flex:1;height:1px;background:rgba(201,168,76,0.25);max-width:50px;}
@@ -80,38 +111,77 @@ body{font-family:'Outfit',sans-serif;background:var(--soft);color:var(--text);pa
 .sec-sub{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.7;}
 section{margin-bottom:3rem;}
 
-/* FUNNEL (Processing Stages) */
+/* FUNNEL */
 .funnel-wrap{display:flex;flex-direction:column;gap:8px;}
 .funnel-row{display:grid;grid-template-columns:160px 1fr 60px 60px;gap:12px;align-items:center;padding:10px 16px;background:var(--white);border-radius:12px;border:1px solid var(--border);}
 .funnel-stage{font-size:12px;font-weight:600;color:var(--white);padding:4px 10px;border-radius:20px;text-align:center;}
 .funnel-bar-wrap{height:10px;background:rgba(13,27,62,0.07);border-radius:6px;overflow:hidden;}
-.funnel-bar{height:100%;border-radius:6px;background:linear-gradient(to right,var(--gold),var(--gold-l));width:0%;transition:width 0.9s;}
+.funnel-bar{height:100%;border-radius:6px;background:linear-gradient(to right,var(--gold),var(--gold-l));width:100%;}
 .funnel-count{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--navy);text-align:center;}
 .funnel-pct{font-size:12px;color:var(--muted);text-align:center;}
 
-/* table wrapper */
-.table-wrapper{width:100%;overflow-x:auto;border-radius:16px;border:1px solid var(--border);background:var(--white);margin-top:1rem;}
-.invoice-table{width:100%;min-width:800px;border-collapse:collapse;font-size:12px;}
-.invoice-table th,.invoice-table td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--border);}
-.invoice-table th{background:var(--navy);color:rgba(255,255,255,0.75);font-size:10px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;position:sticky;top:0;}
+/* TABLE WRAPPER */
+.table-wrapper{
+  width:100%;
+  overflow-x:auto;
+  overflow-y:auto;
+  max-height:450px;
+  border-radius:16px;
+  border:1px solid var(--border);
+  background:var(--white);
+  margin-top:1rem;
+}
+.invoice-table{
+  width:100%;
+  min-width:800px;
+  border-collapse:collapse;
+  font-size:12px;
+}
+.invoice-table th,.invoice-table td{
+  padding:12px 10px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+}
+.invoice-table th{
+  background:var(--navy);
+  color:rgba(255,255,255,0.75);
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
 .invoice-table tr:hover{background:var(--cream);}
-.total-row{background:var(--gold-pale);font-weight:600;}
+.total-row{
+  background:var(--gold-pale);
+  font-weight:600;
+  position:sticky;
+  bottom:0;
+}
+.scroll-hint{
+  text-align:center;
+  font-size:11px;
+  color:var(--muted);
+  margin-top:10px;
+  padding:5px;
+  background:rgba(201,168,76,0.1);
+  border-radius:20px;
+  display:inline-block;
+}
 
-/* grid for features & comparisons */
 .grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:1rem 0;}
 .card{background:var(--white);border-radius:16px;padding:1.3rem;border:1px solid var(--border);box-shadow:var(--shadow);}
 .card h3{margin-bottom:0.7rem;color:var(--gold);}
 .card ul{list-style:none;padding-left:0;}
 .card li{margin:6px 0;font-size:13px;}
-.highlight-card{background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:2px solid var(--gold);text-align:center;}
+.highlight-card{background:linear-gradient(135deg,rgba(212,175,55,0.08),rgba(212,175,55,0.02));border:2px solid var(--gold);text-align:center;padding:1.5rem;border-radius:16px;margin-top:1rem;}
 
-/* insights grid */
 .insights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:1rem;}
 .insight-card{background:var(--white);border-radius:14px;padding:1.2rem;border:1px solid var(--border);}
-.insight-card.dark{background:var(--navy);}
 .insight-icon{font-size:26px;margin-bottom:0.7rem;}
 .insight-title{font-size:15px;font-weight:600;color:var(--navy);margin-bottom:0.4rem;}
-.insight-card.dark .insight-title{color:var(--white);}
 .insight-text{font-size:13px;color:var(--muted);line-height:1.6;}
 
 .reveal{opacity:0;transform:translateY(20px);transition:opacity 0.5s ease,transform 0.5s;}
@@ -120,23 +190,25 @@ section{margin-bottom:3rem;}
 @media(max-width:700px){
   .funnel-row{grid-template-columns:110px 1fr 45px 40px;}
   .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .toast-notification{white-space:normal;text-align:center;max-width:90%;font-size:12px;}
 }
 </style>
 </head>
 <body>
 
-<!-- STICKY FOOTER (exactly as previous invoice report) -->
+<div id="toastMsg" class="toast-notification"><i class="fas fa-shield-alt"></i><span id="toastText">Nice try! 👀</span></div>
+
 <div class="sticky-footer">
   Made with ❤ <a href="#">~rhc</a> · EE Lab, KLE-CTIE · CTIE Accounts Bulk Email · 
-  </div>
+  <a href="#">Tally Prime v34 Integration</a> · Pilot: 34 Real Invoices | ₹3.31L Processed
+</div>
 
-<!-- HEADER -->
 <div class="report-header">
   <div class="report-header-inner">
     <div>
-      <div class="report-eyebrow">KLE-CTIE · Centre for Technology Innovation & Entrepreneurship </div>
+      <div class="report-eyebrow">KLE COLLEGE OF TECHNOLOGY & INNOVATION · EE LAB</div>
       <div class="report-title">Invoice <span>Automation</span><br>Pilot Report</div>
-      <div class="report-sub">Tally Prime → Split → Stamp → Lock → Email Dispatch</div>
+      <div class="report-sub">Tally Prime v34 → Split → Stamp → Lock → Email Dispatch</div>
       <div class="gold-bar"></div>
     </div>
     <div class="static-badge">
@@ -161,26 +233,22 @@ section{margin-bottom:3rem;}
     <div class="sec-title">Automation <em>Processing Funnel</em></div>
     <div class="sec-sub">From raw export to locked PDFs and dispatched emails — every step fully automated.</div>
     <div class="funnel-wrap">
-      <div class="funnel-row"><div class="funnel-stage" style="background:#1a2f5e;">Tally Prime Export</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
-      <div class="funnel-row"><div class="funnel-stage" style="background:#2471a3;">Split & Extract</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
-      <div class="funnel-row"><div class="funnel-stage" style="background:#6c3483;">Stamp + Lock</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
-      <div class="funnel-row"><div class="funnel-stage" style="background:#1b7a3e;">Email Dispatch</div><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
+      <div class="funnel-row"><div class="funnel-stage" style="background:#1a2f5e;">Tally Prime Export</div><div class="funnel-bar-wrap"><div class="funnel-bar"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
+      <div class="funnel-row"><div class="funnel-stage" style="background:#2471a3;">Split & Extract</div><div class="funnel-bar-wrap"><div class="funnel-bar"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
+      <div class="funnel-row"><div class="funnel-stage" style="background:#6c3483;">Stamp + Lock</div><div class="funnel-bar-wrap"><div class="funnel-bar"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
+      <div class="funnel-row"><div class="funnel-stage" style="background:#1b7a3e;">Email Dispatch</div><div class="funnel-bar-wrap"><div class="funnel-bar"></div></div><div class="funnel-count">34</div><div class="funnel-pct">100%</div></div>
     </div>
-    <div class="sec-sub" style="margin-top:12px;">✅ Zero drop-off — every invoice successfully processed, stamped, locked and emailed.</div>
   </section>
 
-  <!-- SECTION 02: REAL INVOICE DATA (ALL 34) -->
+  <!-- SECTION 02: INVOICE TABLE -->
   <section class="reveal">
     <div class="sec-label"><span class="sec-num">02</span><div class="sec-line"></div></div>
     <div class="sec-title">All <em>34 Real Invoices</em></div>
     <div class="sec-sub">Exported from Tally Prime v34, automatically split, stamped with round seal + signature, PDF locked, and emailed.</div>
     <div class="table-wrapper">
       <table class="invoice-table">
-        <thead>
-          <tr><th>#</th><th>Invoice No.</th><th>Customer Name</th><th>Amount (₹)</th><th>Outstanding (₹)</th><th>Space (sq ft)</th><th>Utility Rate (₹/sq ft)</th></tr>
-        </thead>
+        <thead><tr><th>#</th><th>Invoice No.</th><th>Customer Name</th><th>Amount (₹)</th><th>Outstanding (₹)</th><th>Space (sq ft)</th><th>Utility Rate (₹/sq ft)</th></tr></thead>
         <tbody>
-          <!-- Data rows as per previous report (34 rows shown) -->
           <tr><td>1</td><td>KLE/35/26-27</td><td>SASKEN SILICON TECHNOLOGIES PVT LTD</td><td>54,752</td><td>54,752</td><td>1,160</td><td>40.00</td></tr>
           <tr><td>2</td><td>KLE/36/26-27</td><td>Thirdeye Data</td><td>6,355</td><td>6,925</td><td>205</td><td>31.00</td></tr>
           <tr><td>3</td><td>KLE/37/26-27</td><td>Abhiyantrik Solutions Pvt Ltd</td><td>3,690</td><td>3,790</td><td>180</td><td>19.00</td></tr>
@@ -219,7 +287,7 @@ section{margin-bottom:3rem;}
         </tbody>
       </table>
     </div>
-    <div class="sec-sub" style="margin-top:12px;">📊 Utility rates range ₹0–₹40/sq ft · Total space 13,436 sq ft · All PDFs stamped with round seal + signature and locked.</div>
+    <div style="text-align:center; margin-top:10px;"><span class="scroll-hint"><i class="fas fa-arrow-down"></i> Scroll to see all 34 invoices <i class="fas fa-arrow-down"></i></span></div>
   </section>
 
   <!-- SECTION 03: FEATURES -->
@@ -241,36 +309,19 @@ section{margin-bottom:3rem;}
     <div class="sec-label"><span class="sec-num">04</span><div class="sec-line"></div></div>
     <div class="sec-title">Manual <em>vs</em> Automated</div>
     <div class="grid-2">
-      <div class="card"><h3>⏱️ Manual Process (34 invoices)</h3>
-        <ul><li>PDF splitting: 60–90 min</li><li>Data entry: 30–45 min</li><li>Stamping: 20–30 min</li><li>Email sending: 30–45 min</li><li><strong>Total: ~2.5–3.5 hours</strong></li></ul>
-      </div>
-      <div class="card"><h3>⚡ Automated Process (34 invoices)</h3>
-        <ul><li>PDF splitting: 30 sec ✓</li><li>Data extraction: automatic ✓</li><li>Auto stamp & lock: 1 min ✓</li><li>Bulk email: 2 min ✓</li><li><strong>Total: &lt; 4 minutes</strong></li></ul>
-      </div>
+      <div class="card"><h3>⏱️ Manual Process (34 invoices)</h3><ul><li>PDF splitting: 60–90 min</li><li>Data entry: 30–45 min</li><li>Stamping: 20–30 min</li><li>Email sending: 30–45 min</li><li><strong>Total: ~2.5–3.5 hours</strong></li></ul></div>
+      <div class="card"><h3>⚡ Automated Process (34 invoices)</h3><ul><li>PDF splitting: 30 sec ✓</li><li>Data extraction: automatic ✓</li><li>Auto stamp & lock: 1 min ✓</li><li>Bulk email: 2 min ✓</li><li><strong>Total: &lt; 4 minutes</strong></li></ul></div>
     </div>
-    <div class="highlight-card card"><div style="font-size:32px; color:var(--gold);">~97%</div><div>Time reduction · Manual 3 hours → Automated 4 minutes</div></div>
+    <div class="highlight-card"><div style="font-size:32px; color:var(--gold);">~97%</div><div>Time reduction · Manual 3 hours → Automated 4 minutes</div></div>
   </section>
 
-  <!-- SECTION 05: TRACKING & AUDIT -->
+  <!-- SECTION 05: TRACKING -->
   <section class="reveal">
     <div class="sec-label"><span class="sec-num">05</span><div class="sec-line"></div></div>
     <div class="sec-title">Tracking <em>& Audit Trail</em></div>
     <div class="grid-2">
-      <div class="card"><h3>✅ Automatically Tracked</h3>
-        <ul><li>Email sent/failed status (34/34 success)</li><li>Timestamp of each send</li><li>Delivery failure reasons (none)</li><li>PDF stamping confirmation</li><li>Customer-wise logs</li></ul>
-      </div>
-      <div class="card"><h3>📋 Pilot Run Log</h3>
-        <div style="background:var(--cream); padding:12px; border-radius:8px; font-family:monospace; font-size:12px;">
-          📅 Date: 2026-05-15<br>
-          📧 Sender: KLE CTIE Accounts Dept<br>
-          📁 Period: Apr-2026<br>
-          📊 Total: 34<br>
-          ✅ Successful: 34<br>
-          ❌ Failed: 0<br>
-          💰 Total Amount: ₹3,31,333<br>
-          ⏱️ Processing time: 3m 52s
-        </div>
-      </div>
+      <div class="card"><h3>✅ Automatically Tracked</h3><ul><li>Email sent/failed status (34/34 success)</li><li>Timestamp of each send</li><li>Delivery failure reasons (none)</li><li>PDF stamping confirmation</li><li>Customer-wise logs</li></ul></div>
+      <div class="card"><h3>📋 Pilot Run Log</h3><div style="background:var(--cream); padding:12px; border-radius:8px; font-family:monospace; font-size:12px;">📅 Date: 2026-05-15<br>📧 Sender: KLE CTIE Accounts Dept<br>📁 Period: Apr-2026<br>📊 Total: 34<br>✅ Successful: 34<br>❌ Failed: 0<br>💰 Total Amount: ₹3,31,333<br>⏱️ Processing time: 3m 52s</div></div>
     </div>
   </section>
 
@@ -279,25 +330,164 @@ section{margin-bottom:3rem;}
     <div class="sec-label"><span class="sec-num">06</span><div class="sec-line"></div></div>
     <div class="sec-title">Key <em>Insights</em></div>
     <div class="insights-grid">
-      <div class="insight-card"><div class="insight-icon">⏱️</div><div class="insight-title">97% Time Saved</div><div class="insight-text">Manual 3 hours → automated 4 minutes for 34 invoices. Scales linearly.</div></div>
-      <div class="insight-card"><div class="insight-icon">🔒</div><div class="insight-title">Zero Post-Editing Risk</div><div class="insight-text">PDFs are locked with owner password after stamping – no accidental changes.</div></div>
-      <div class="insight-card"><div class="insight-icon">📧</div><div class="insight-title">100% Delivery Rate</div><div class="insight-text">All 34 sample emails reached recipients; attachment verified.</div></div>
+      <div class="insight-card"><div class="insight-icon">⏱️</div><div class="insight-title">97% Time Saved</div><div class="insight-text">Manual 3 hours → automated 4 minutes for 34 invoices.</div></div>
+      <div class="insight-card"><div class="insight-icon">🔒</div><div class="insight-title">Zero Post-Editing Risk</div><div class="insight-text">PDFs locked with owner password – no accidental changes.</div></div>
+      <div class="insight-card"><div class="insight-icon">📧</div><div class="insight-title">100% Delivery Rate</div><div class="insight-text">All 34 sample emails reached recipients; attachments verified.</div></div>
       <div class="insight-card"><div class="insight-icon">💰</div><div class="insight-title">₹3.31L Invoiced</div><div class="insight-text">First batch total value; system ready for monthly run.</div></div>
     </div>
   </section>
 </div>
 
 <script>
-  // Simple reveal on scroll
+  // Funny messages array
+  const funnyMessages = [
+    "🕵️‍♂️ Oops! Detective work won't help you copy this report!",
+    "🍪 Nice try! But this cookie is not for copying!",
+    "🚫 Ctrl+C? More like Ctrl+Can't! 😂",
+    "📋 This report is like a secret recipe — not for sharing!",
+    "👮‍♀️ You've been caught red-handed! No copying allowed!",
+    "🔒 This content is locked tighter than Fort Knox!",
+    "🤔 Looking for something? The copy button is on vacation!",
+    "💾 Save it? This report prefers to live here only!",
+    "🎣 Nice phishing attempt! But we're not biting!",
+    "🐱‍👤 Even ninjas can't copy this report!",
+    "📄 This report identifies as 'read-only' — respect its choices!",
+    "🔑 You need a special key... and you don't have it! 😎",
+    "🤡 Trying to copy? That's clown behavior, my friend!",
+    "👻 Boo! Copying is scary — so don't do it!",
+    "🧙‍♂️ Magic? No. Copy protection? Yes!",
+    "🦄 This report is unicorn-protected — mythical and uncopyable!",
+    "🍕 Copying this report is like stealing pizza — just wrong!",
+    "🎮 Game Over! You cannot copy this level!",
+    "☕ Even coffee won't help you copy this report!",
+    "🐧 Linux penguins say: No copying allowed!",
+    "😎 This report has VIP protection — you're not on the list!",
+    "🏰 You shall not copy! (Gandalf voice)",
+    "🤖 Access Denied. This report is AI-protected.",
+    "💀 Copying this may cause bad luck for 7 years!",
+    "🎪 Welcome to the circus? Because you're clowning around with copy!",
+    "🍌 I like bananas, but not copycats! 🍌",
+    "🦥 Even sloths know not to copy this report!",
+    "🐙 Release the Kraken? No, just don't copy!"
+  ];
+
+  let toastTimeout;
+
+  function showFunnyMessage() {
+    const randomMsg = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
+    const toast = document.getElementById('toastMsg');
+    const toastText = document.getElementById('toastText');
+    
+    toastText.innerHTML = randomMsg;
+    toast.classList.add('show');
+    
+    if (toastTimeout) clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2500);
+  }
+
+  // Block right-click
+  document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    showFunnyMessage();
+    return false;
+  });
+
+  // Block F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, Ctrl+C, Ctrl+V, Ctrl+X
+  document.addEventListener('keydown', function(e) {
+    // F12
+    if (e.key === 'F12') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+Shift+I (DevTools)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+U (View Source)
+    if (e.ctrlKey && e.key === 'u') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+S (Save)
+    if (e.ctrlKey && e.key === 's') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+C (Copy)
+    if (e.ctrlKey && e.key === 'c') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+V (Paste)
+    if (e.ctrlKey && e.key === 'v') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+X (Cut)
+    if (e.ctrlKey && e.key === 'x') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+A (Select All)
+    if (e.ctrlKey && e.key === 'a') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+P (Print)
+    if (e.ctrlKey && e.key === 'p') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+    // Ctrl+R / F5 (Refresh) - optional, let's allow but warn
+    if ((e.ctrlKey && e.key === 'r') || e.key === 'F5') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+  });
+
+  // Disable print screen key
+  document.addEventListener('keyup', function(e) {
+    if (e.key === 'PrintScreen') {
+      e.preventDefault();
+      showFunnyMessage();
+      return false;
+    }
+  });
+
+  // Disable drag and drop of content
+  document.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+    showFunnyMessage();
+    return false;
+  });
+
+  // Disable copy via mouse selection
+  document.addEventListener('copy', function(e) {
+    e.preventDefault();
+    showFunnyMessage();
+    return false;
+  });
+
+  // Reveal animations
   const reveals = document.querySelectorAll('.reveal');
   const observer = new IntersectionObserver(entries => {
     entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
   }, { threshold: 0.1 });
   reveals.forEach(r => observer.observe(r));
-  // force initial visible for KPIs
-  setTimeout(() => {
-    document.querySelectorAll('.reveal').forEach(r => r.classList.add('visible'));
-  }, 200);
+  setTimeout(() => { reveals.forEach(r => r.classList.add('visible')); }, 200);
 </script>
 </body>
 </html>
