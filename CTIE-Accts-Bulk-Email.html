@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KLE-CTIE Invoice Automation System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0C2D6B; --navy-deep:#081d47; --navy-soft:#1a4080;
+    --gold:#C8960C; --gold-bright:#e0a90f; --gold-pale:#f5e6c0;
+    --green:#059669; --red:#DC2626;
+    --ink:#0a1628; --paper:#f7f5ef; --paper-warm:#efe9dc;
+    --mist:#e8ecf3; --line:rgba(12,45,107,.12);
+    --mono:'JetBrains Mono',monospace;
+    --display:'Fraunces',serif;
+    --body:'Space Grotesk',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--body); background:var(--paper); color:var(--ink);
+    overflow-x:hidden; line-height:1.6;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(200,150,12,.05), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(12,45,107,.06), transparent 45%);
+  }
+  /* grain overlay */
+  body::before{
+    content:""; position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:.035;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* progress bar */
+  .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-bright));z-index:1000;width:0%;transition:width .1s linear;box-shadow:0 0 12px rgba(200,150,12,.6)}
+
+  /* nav dots */
+  .dots{position:fixed;right:28px;top:50%;transform:translateY(-50%);z-index:900;display:flex;flex-direction:column;gap:14px}
+  .dots a{width:9px;height:9px;border-radius:50%;background:var(--line);border:1.5px solid transparent;transition:all .3s;cursor:pointer}
+  .dots a.on{background:var(--gold);border-color:var(--navy);transform:scale(1.4)}
+  @media(max-width:760px){.dots{display:none}}
+
+  section{padding:120px 7vw;position:relative;max-width:1280px;margin:0 auto}
+  @media(max-width:760px){section{padding:80px 24px}}
+
+  .reveal{opacity:0;transform:translateY(40px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}
+  .reveal.d4{transition-delay:.4s}.reveal.d5{transition-delay:.5s}.reveal.d6{transition-delay:.6s}
+
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:12px}
+  .kicker::before{content:"";width:36px;height:1.5px;background:var(--gold)}
+
+  h1{font-family:var(--display);font-weight:900;line-height:.98;letter-spacing:-.02em}
+  h2{font-family:var(--display);font-weight:700;font-size:clamp(32px,5vw,58px);line-height:1.02;letter-spacing:-.02em;color:var(--navy)}
+  h3{font-family:var(--display);font-weight:600;font-size:24px;color:var(--navy)}
+  p.lead{font-size:clamp(16px,2vw,20px);color:#3a4a5f;max-width:62ch}
+
+  /* ===== HERO ===== */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;max-width:none;width:100%;padding:120px 7vw}
+  .hero-bg{position:absolute;inset:0;z-index:0;background:linear-gradient(135deg,var(--navy-deep),var(--navy) 55%,var(--navy-soft));overflow:hidden}
+  .hero-bg svg{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
+  .hero-content{position:relative;z-index:2;color:var(--paper)}
+  .hero h1{font-size:clamp(44px,9vw,128px);color:#fff}
+  .hero h1 .gold{color:var(--gold);font-style:italic;font-weight:400}
+  .hero .sub{font-size:clamp(15px,2vw,21px);color:rgba(255,255,255,.72);max-width:54ch;margin-top:28px;font-weight:400}
+  .hero .badge{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-pale);border:1px solid rgba(200,150,12,.4);padding:8px 18px;border-radius:100px;margin-bottom:34px;background:rgba(200,150,12,.08);backdrop-filter:blur(4px)}
+  .hero .badge .pulse{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(200,150,12,.6)}50%{opacity:.6;box-shadow:0 0 0 8px rgba(200,150,12,0)}}
+  .hero-stats{display:flex;gap:48px;margin-top:56px;flex-wrap:wrap}
+  .hero-stats .s .n{font-family:var(--display);font-size:clamp(34px,5vw,52px);font-weight:900;color:var(--gold);line-height:1}
+  .hero-stats .s .l{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:8px}
+  .scroll-hint{position:absolute;bottom:36px;left:7vw;z-index:3;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.5);display:flex;align-items:center;gap:12px}
+  .scroll-hint .line{width:1px;height:40px;background:linear-gradient(var(--gold),transparent);animation:slide 2s infinite}
+  @keyframes slide{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}50.1%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+  /* ===== PROBLEM ===== */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+  @media(max-width:860px){.split{grid-template-columns:1fr;gap:40px}}
+  .pain-list{list-style:none;margin-top:24px}
+  .pain-list li{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--line);font-size:16px}
+  .pain-list li .x{color:var(--red);font-weight:700;font-size:18px;flex-shrink:0}
+  .num-card{background:var(--navy);color:#fff;border-radius:20px;padding:48px;position:relative;overflow:hidden;box-shadow:0 30px 60px -20px rgba(12,45,107,.4)}
+  .num-card::after{content:"₹";position:absolute;right:-20px;bottom:-40px;font-family:var(--display);font-size:240px;font-weight:900;color:rgba(255,255,255,.04);line-height:1}
+  .num-card .big{font-family:var(--display);font-size:72px;font-weight:900;color:var(--gold);line-height:1}
+  .num-card .cap{font-size:15px;color:rgba(255,255,255,.7);margin-top:12px;position:relative;z-index:2}
+
+  /* ===== PIPELINE / FLOW ===== */
+  .flow{display:flex;flex-direction:column;gap:0;margin-top:50px}
+  .stage{display:grid;grid-template-columns:80px 1fr;gap:28px;padding:28px 0;position:relative}
+  .stage .node{display:flex;flex-direction:column;align-items:center}
+  .stage .ring{width:58px;height:58px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:900;font-size:22px;color:var(--navy);background:var(--paper);position:relative;z-index:2;transition:all .5s}
+  .stage.in .ring{background:var(--navy);color:var(--gold);transform:scale(1.08)}
+  .stage .stem{width:2px;flex:1;background:linear-gradient(var(--gold),var(--line));margin-top:6px}
+  .stage:last-child .stem{display:none}
+  .stage .body h3{margin-bottom:8px}
+  .stage .body p{color:#46566b;font-size:15px;max-width:60ch}
+  .stage .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--gold);background:var(--gold-pale);padding:3px 10px;border-radius:6px;margin-top:12px;margin-right:8px}
+
+  /* ===== CODE WINDOW ===== */
+  .code-win{background:var(--navy-deep);border-radius:14px;overflow:hidden;box-shadow:0 30px 70px -25px rgba(8,29,71,.6);margin-top:40px;border:1px solid rgba(200,150,12,.18)}
+  .code-bar{display:flex;align-items:center;gap:8px;padding:14px 18px;background:rgba(0,0,0,.25);border-bottom:1px solid rgba(255,255,255,.06)}
+  .code-bar .dot{width:12px;height:12px;border-radius:50%}
+  .code-bar .r{background:#ff5f57}.code-bar .y{background:#febc2e}.code-bar .g{background:#28c840}
+  .code-bar .fname{margin-left:14px;font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.5)}
+  .code-body{padding:24px 26px;font-family:var(--mono);font-size:13px;line-height:1.85;color:#cdd6e8;overflow-x:auto}
+  .code-body .c{color:#5b7a9d;font-style:italic}
+  .code-body .k{color:#e0a90f}
+  .code-body .s{color:#7ec699}
+  .code-body .f{color:#82aaff}
+  .code-body .n{color:#f78c6c}
+
+  /* ===== FEATURE GRID ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:44px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px;transition:transform .4s,box-shadow .4s;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-6px);box-shadow:0 24px 50px -22px rgba(12,45,107,.3)}
+  .card .ic{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--navy),var(--navy-soft));display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+  .card .ic svg{width:24px;height:24px;stroke:var(--gold);fill:none;stroke-width:1.8}
+  .card h3{font-size:19px;margin-bottom:8px}
+  .card p{font-size:14px;color:#566} 
+  .card .corner{position:absolute;top:0;right:0;width:60px;height:60px;background:linear-gradient(135deg,transparent 50%,rgba(200,150,12,.1) 50%)}
+
+  /* ===== PORTAL SHOWCASE ===== */
+  .browser{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(12,45,107,.45);margin-top:44px;border:1px solid var(--line)}
+  .browser-bar{display:flex;align-items:center;gap:8px;padding:13px 18px;background:var(--mist);border-bottom:1px solid var(--line)}
+  .browser-bar .dot{width:11px;height:11px;border-radius:50%}
+  .browser-bar .url{margin-left:16px;flex:1;background:#fff;border-radius:8px;padding:6px 16px;font-family:var(--mono);font-size:11px;color:#7a8aa0;border:1px solid var(--line)}
+  .portal-shot{padding:0}
+  .ptop{background:var(--navy);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+  .ptop .brand{color:#fff;font-weight:700;display:flex;align-items:center;gap:9px;font-size:15px}
+  .ptop .brand .d{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+  .ptop .nav{display:flex;gap:6px}
+  .ptop .nav span{font-size:12px;padding:6px 13px;border-radius:7px;color:rgba(255,255,255,.7)}
+  .ptop .nav span.act{background:var(--gold);color:var(--navy);font-weight:600}
+  .pkpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:24px}
+  @media(max-width:680px){.pkpis{grid-template-columns:repeat(2,1fr)}}
+  .pkpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px}
+  .pkpi .l{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#8a97a8}
+  .pkpi .v{font-family:var(--display);font-size:26px;font-weight:900;margin-top:8px}
+  .pkpi.navy .v{color:var(--navy)}.pkpi.green .v{color:var(--green)}.pkpi.gold .v{color:var(--gold)}.pkpi.red .v{color:var(--red)}
+  .pchart{padding:0 24px 28px;display:flex;align-items:flex-end;gap:10px;height:140px}
+  .pbar{flex:1;background:linear-gradient(var(--navy),var(--navy-soft));border-radius:6px 6px 0 0;position:relative;transition:height 1.2s cubic-bezier(.2,.8,.2,1)}
+  .pbar.g{background:linear-gradient(var(--green),#34d399)}
+
+  /* ===== STACK ===== */
+  .stack-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+  .chip{font-family:var(--mono);font-size:13px;padding:10px 18px;border-radius:100px;border:1px solid var(--line);background:#fff;color:var(--navy);display:flex;align-items:center;gap:9px;transition:all .3s}
+  .chip:hover{border-color:var(--gold);background:var(--gold-pale)}
+  .chip .d{width:7px;height:7px;border-radius:50%;background:var(--gold)}
+
+  /* ===== CLOSE ===== */
+  .close{background:linear-gradient(135deg,var(--navy-deep),var(--navy));color:#fff;border-radius:28px;padding:80px 60px;text-align:center;position:relative;overflow:hidden;margin-top:40px}
+  .close::before{content:"🌿";position:absolute;font-size:200px;opacity:.05;top:-40px;left:-20px}
+  .close h2{color:#fff;font-size:clamp(30px,5vw,52px)}
+  .close p{color:rgba(255,255,255,.7);max-width:50ch;margin:20px auto 0}
+  .sig{font-family:var(--display);font-style:italic;font-size:18px;color:var(--gold);margin-top:40px}
+
+  footer{text-align:center;padding:50px 24px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#8a97a8}
+
+  .marker{font-family:var(--display);font-style:italic;color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+<nav class="dots" id="dots"></nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="s-hero">
+  <div class="hero-bg">
+    <svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice">
+      <defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+        <path d="M50 0H0V50" fill="none" stroke="rgba(200,150,12,.12)" stroke-width="1"/></pattern></defs>
+      <rect width="1000" height="600" fill="url(#grid)"/>
+      <circle cx="820" cy="120" r="180" fill="none" stroke="rgba(200,150,12,.1)" stroke-width="1.5"/>
+      <circle cx="820" cy="120" r="120" fill="none" stroke="rgba(200,150,12,.08)" stroke-width="1"/>
+      <circle cx="140" cy="480" r="220" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="1.5"/>
+    </svg>
+  </div>
+  <div class="hero-content">
+    <span class="badge reveal in"><span class="pulse"></span>KLE-CTIE · Internal Systems</span>
+    <h1 class="reveal in d1">The Invoice<br><span class="gold">Automation</span> Engine</h1>
+    <p class="sub reveal in d2">From a single 34-page PDF to delivered, tracked, and reconciled invoices — a zero-cost system built on Python and Google Apps Script, wrapped in a password-protected analytics portal.</p>
+    <div class="hero-stats reveal in d3">
+      <div class="s"><div class="n">34</div><div class="l">Invoices / run</div></div>
+      <div class="s"><div class="n">5</div><div class="l">Email stages</div></div>
+      <div class="s"><div class="n">3</div><div class="l">Report views</div></div>
+      <div class="s"><div class="n">₹0</div><div class="l">Running cost</div></div>
+    </div>
+  </div>
+  <div class="scroll-hint"><span class="line"></span>Scroll to explore</div>
+</section>
+
+<!-- ===== PROBLEM ===== -->
+<section id="s-problem">
+  <span class="kicker reveal">The Starting Point</span>
+  <div class="split">
+    <div>
+      <h2 class="reveal d1">One PDF.<br>Thirty-four tenants.<br>Hours of manual work.</h2>
+      <ul class="pain-list reveal d2">
+        <li><span class="x">✕</span> A monthly Tally export bundling every startup's rent invoice into one file</li>
+        <li><span class="x">✕</span> Manual splitting, renaming, and emailing — one by one</li>
+        <li><span class="x">✕</span> No tracking of who opened, who paid, who's overdue</li>
+        <li><span class="x">✕</span> Follow-ups slipping through the cracks</li>
+      </ul>
+    </div>
+    <div class="num-card reveal d3">
+      <div class="big">34</div>
+      <div class="cap">incubated startups billed every month for space utility &amp; housekeeping — across Physical and Virtual agreements at KLE Tech Park.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PIPELINE ===== -->
+<section id="s-pipeline">
+  <span class="kicker reveal">Stage 1 · The Python Engine</span>
+  <h2 class="reveal d1">A local script does the heavy lifting</h2>
+  <p class="lead reveal d2"><span class="marker">kle_invoice_processor.py</span> — 555 lines that turn the raw PDF into branded, tracked, ledger-ready invoices in one command.</p>
+  <div class="flow">
+    <div class="stage reveal"><div class="node"><div class="ring">1</div><div class="stem"></div></div>
+      <div class="body"><h3>Extract</h3><p>Reads every page with pdfplumber, parsing invoice number, buyer, GSTIN, sq.ft., taxable value, GST split, and outstanding balance — handling both the GST and NIL-tax invoice formats.</p>
+      <span class="tag">pdfplumber</span><span class="tag">regex</span></div></div>
+    <div class="stage reveal"><div class="node"><div class="ring">2</div><div class="stem"></div></div>
+      <div class="body"><h3>De-duplicate</h3><p>Checks each invoice number against the sheet before processing — re-running on the same file silently skips what's already there, so no double-sends.</p>
+      <span class="tag">idempotent</span></div></div>
+    <div class="stage reveal"><div class="node"><div class="ring">3</div><div class="stem"></div></div>
+      <div class="body"><h3>Split &amp; Stamp</h3><p>Each page becomes its own PDF, stamped with a hand-drawn green leaf, the Go-Green footer, a red heart signature, and a semi-transparent KLE-CTIE official seal.</p>
+      <span class="tag">pypdf</span><span class="tag">reportlab</span></div></div>
+    <div class="stage reveal"><div class="node"><div class="ring">4</div><div class="stem"></div></div>
+      <div class="body"><h3>Upload</h3><p>Stamped PDFs go to Google Drive via OAuth (owned by you, not a quota-less service account), each granted anyone-with-link read access for email recipients.</p>
+      <span class="tag">Drive API</span><span class="tag">OAuth</span></div></div>
+    <div class="stage reveal"><div class="node"><div class="ring">5</div></div>
+      <div class="body"><h3>Populate</h3><p>One row per invoice lands in a Google Sheet with branded headers, status dropdowns, and 27 columns spanning extraction data, tracking, and payment fields.</p>
+      <span class="tag">gspread</span><span class="tag">Sheets API</span></div></div>
+  </div>
+
+  <div class="code-win reveal">
+    <div class="code-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="fname">kle_invoice_processor.py</span></div>
+    <div class="code-body"><span class="c"># Footer + seal stamped onto every split invoice</span><br>
+<span class="k">def</span> <span class="f">make_overlay</span>(page_w, page_h, seal_path):<br>
+&nbsp;&nbsp;c = canvas.Canvas(buf, pagesize=(page_w, page_h))<br>
+&nbsp;&nbsp;<span class="c"># 50% opacity official seal, bottom-right</span><br>
+&nbsp;&nbsp;c.<span class="f">setFillAlpha</span>(<span class="n">0.5</span>)<br>
+&nbsp;&nbsp;c.<span class="f">drawImage</span>(seal, x, y, <span class="n">80</span>, <span class="n">80</span>, mask=<span class="s">'auto'</span>)<br>
+&nbsp;&nbsp;<span class="f">_draw_vector_leaf</span>(c, x, y, size=<span class="n">8</span>)&nbsp;&nbsp;<span class="c"># green</span><br>
+&nbsp;&nbsp;c.<span class="f">drawString</span>(x, <span class="n">22</span>, <span class="s">"Go Green — Print only if necessary…"</span>)<br>
+&nbsp;&nbsp;<span class="f">_draw_vector_heart</span>(c, hx, hy, size=<span class="n">7</span>)&nbsp;<span class="c"># red ❤</span></div>
+  </div>
+</section>
+
+<!-- ===== EMAIL ENGINE ===== -->
+<section id="s-email">
+  <span class="kicker reveal">Stage 2 · The Apps Script Engine</span>
+  <h2 class="reveal d1">Branded email, sent &amp; tracked</h2>
+  <p class="lead reveal d2">Every invoice goes out as a KLE-navy HTML card with a live CTA, an open-tracking pixel, and an automatic reminder schedule — all running inside the Sheet for free.</p>
+  <div class="grid">
+    <div class="card reveal d1"><div class="corner"></div><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 8l9 6 9-6M3 8v10h18V8M3 8l9-5 9 5"/></svg></div><h3>Branded Send</h3><p>HTML invoice card with summary, bank details, and a "View &amp; Download" CTA linking to the Drive PDF.</p></div>
+    <div class="card reveal d2"><div class="corner"></div><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/></svg></div><h3>Open &amp; Click Tracking</h3><p>A 1×1 pixel logs opens; the CTA routes through the web app to log clicks — both written back to the sheet.</p></div>
+    <div class="card reveal d3"><div class="corner"></div><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></div><h3>Auto Follow-ups</h3><p>A daily 9 AM trigger sends Reminder 1 at Day 7 and Reminder 2 at Day 15 — only for unpaid invoices.</p></div>
+    <div class="card reveal d4"><div class="corner"></div><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div><h3>Payment Receipt</h3><p>Marking an invoice paid fires a green acknowledgement email with the payment mode and reference number.</p></div>
+  </div>
+</section>
+
+<!-- ===== PORTAL ===== -->
+<section id="s-portal">
+  <span class="kicker reveal">Stage 3 · The Portal</span>
+  <h2 class="reveal d1">A password-protected command centre</h2>
+  <p class="lead reveal d2">Everything the Sheet menu could do — now in a single-page web app with role-based login, a live dashboard, an editable invoice table, and exportable reports. The Sheet stays the database; the portal is the cockpit.</p>
+
+  <div class="browser reveal d2">
+    <div class="browser-bar"><span class="dot r" style="background:#ff5f57"></span><span class="dot y" style="background:#febc2e"></span><span class="dot g" style="background:#28c840"></span><span class="url">script.google.com/macros/s/…/exec</span></div>
+    <div class="portal-shot">
+      <div class="ptop"><div class="brand"><span class="d"></span>KLE-CTIE Invoice Portal</div>
+        <div class="nav"><span class="act">Dashboard</span><span>Invoices</span><span>Reports</span></div></div>
+      <div class="pkpis">
+        <div class="pkpi navy"><div class="l">Total Invoiced</div><div class="v" data-count="318450" data-prefix="₹">₹0</div></div>
+        <div class="pkpi green"><div class="l">Collected</div><div class="v" data-count="184200" data-prefix="₹">₹0</div></div>
+        <div class="pkpi gold"><div class="l">Outstanding</div><div class="v" data-count="134250" data-prefix="₹">₹0</div></div>
+        <div class="pkpi red"><div class="l">Collection Rate</div><div class="v" data-count="58" data-suffix="%">0%</div></div>
+      </div>
+      <div class="pchart" id="pchart">
+        <div class="pbar" data-h="55"></div><div class="pbar g" data-h="38"></div>
+        <div class="pbar" data-h="72"></div><div class="pbar g" data-h="50"></div>
+        <div class="pbar" data-h="88"></div><div class="pbar g" data-h="64"></div>
+        <div class="pbar" data-h="95"></div><div class="pbar g" data-h="70"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card reveal d1"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3>Role-Based Login</h3><p>SHA-256 hashed passwords, 4-hour sessions, admin &amp; viewer roles — ready for more KLE-CTIE staff.</p></div>
+    <div class="card reveal d2"><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div><h3>Live Dashboard</h3><p>KPIs, aging buckets, payment-mode split, and a monthly invoiced-vs-collected trend.</p></div>
+    <div class="card reveal d3"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 20h9M3 17l9-9 4 4"/><path d="M16 7l4 4"/></svg></div><h3>Inline Editing</h3><p>Edit email, status, and notes from the side panel — financial fields stay locked to the PDF.</p></div>
+    <div class="card reveal d4"><div class="ic"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg></div><h3>CSV Reports</h3><p>Monthly, by-buyer, and payment-mode breakdowns — each exportable to CSV in one click.</p></div>
+  </div>
+</section>
+
+<!-- ===== STACK ===== -->
+<section id="s-stack">
+  <span class="kicker reveal">Under the Hood</span>
+  <h2 class="reveal d1">Zero-cost, Google-native, fully owned</h2>
+  <p class="lead reveal d2">No servers, no subscriptions, no third-party SaaS. The whole system runs on tools KLE-CTIE already has.</p>
+  <div class="stack-row reveal d3">
+    <span class="chip"><span class="d"></span>Python 3</span>
+    <span class="chip"><span class="d"></span>pdfplumber</span>
+    <span class="chip"><span class="d"></span>pypdf</span>
+    <span class="chip"><span class="d"></span>reportlab</span>
+    <span class="chip"><span class="d"></span>gspread</span>
+    <span class="chip"><span class="d"></span>Google Apps Script</span>
+    <span class="chip"><span class="d"></span>Drive API</span>
+    <span class="chip"><span class="d"></span>Sheets API</span>
+    <span class="chip"><span class="d"></span>Gmail</span>
+    <span class="chip"><span class="d"></span>HTML / CSS / JS</span>
+    <span class="chip"><span class="d"></span>OAuth 2.0</span>
+  </div>
+  <div class="split" style="margin-top:64px">
+    <div class="num-card reveal d1" style="background:linear-gradient(135deg,var(--green),#047857)">
+      <div class="big" style="color:#fff">43</div>
+      <div class="cap">server-side functions across the Apps Script backend — auth, sending, tracking, reporting, and editing.</div>
+    </div>
+    <div class="reveal d2">
+      <h3>The architecture in one line</h3>
+      <p style="color:#46566b;margin-top:14px;font-size:16px">A local Python script feeds a Google Sheet database. Apps Script reads that sheet to send branded email, track engagement, and run scheduled reminders — while a single-page portal serves as the human interface. The Sheet is the single source of truth; everything else is a lens onto it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CLOSE ===== -->
+<section id="s-close">
+  <div class="close reveal">
+    <h2>One command.<br>The rest takes care of itself.</h2>
+    <p>Drop the monthly PDF, run the script, and open the portal. Invoices are split, stamped, uploaded, emailed, tracked, reminded, and reconciled — end to end.</p>
+    <div class="sig">Made with ❤ ~rhc · EE Lab, KLE-CTIE</div>
+  </div>
+</section>
+
+<footer>KLE Centre for Technology Innovation &amp; Entrepreneurship · 2025–26</footer>
+
+<script>
+  // progress + dots
+  var sections=[...document.querySelectorAll('section')];
+  var dots=document.getElementById('dots');
+  sections.forEach(function(s,i){var a=document.createElement('a');a.href='#'+s.id;dots.appendChild(a);});
+  var dotEls=[...dots.children];
+
+  function onScroll(){
+    var h=document.documentElement;
+    var sc=h.scrollTop/(h.scrollHeight-h.clientHeight);
+    document.getElementById('prog').style.width=(sc*100)+'%';
+    var mid=window.scrollY+window.innerHeight/2;
+    sections.forEach(function(s,i){
+      if(mid>=s.offsetTop && mid<s.offsetTop+s.offsetHeight){
+        dotEls.forEach(function(d){d.classList.remove('on')});
+        dotEls[i].classList.add('on');
+      }
+    });
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  // reveal on scroll
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        if(e.target.id==='s-pipeline'){animateStages();}
+        if(e.target.id==='s-portal'){animateKpis();animateBars();}
+      }
+    });
+  },{threshold:.18});
+  document.querySelectorAll('.reveal,#s-pipeline,#s-portal').forEach(function(el){io.observe(el)});
+
+  // pipeline stage glow
+  function animateStages(){
+    var stages=document.querySelectorAll('.stage');
+    stages.forEach(function(st,i){setTimeout(function(){st.classList.add('in')},i*220)});
+  }
+
+  // KPI counters
+  var kpiDone=false;
+  function animateKpis(){
+    if(kpiDone)return;kpiDone=true;
+    document.querySelectorAll('[data-count]').forEach(function(el){
+      var end=+el.getAttribute('data-count'),pre=el.getAttribute('data-prefix')||'',suf=el.getAttribute('data-suffix')||'';
+      var t0=null,dur=1600;
+      function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/dur,1);var ease=1-Math.pow(1-p,3);
+        var val=Math.floor(end*ease);
+        el.textContent=pre+val.toLocaleString('en-IN')+suf;
+        if(p<1)requestAnimationFrame(step);}
+      requestAnimationFrame(step);
+    });
+  }
+  // bars
+  var barsDone=false;
+  function animateBars(){
+    if(barsDone)return;barsDone=true;
+    document.querySelectorAll('#pchart .pbar').forEach(function(b,i){
+      setTimeout(function(){b.style.height=b.getAttribute('data-h')+'%'},i*90);
+    });
+  }
+  document.querySelectorAll('#pchart .pbar').forEach(function(b){b.style.height='0%'});
+</script>
+</body>
+</html>
